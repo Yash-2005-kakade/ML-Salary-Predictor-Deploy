@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Salary Predictor 💰</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #020617, #0f172a);
+    color: white;
+    margin: 0;
+}
+
+/* Header */
+header {
+    text-align: center;
+    padding: 20px;
+    font-size: 26px;
+    font-weight: bold;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+}
+
+/* Layout */
+.main {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+    flex-wrap: wrap;
+}
+
+/* Card */
+.card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.6);
+    width: 100%;
+    max-width: 420px;
+}
+
+/* Form rows */
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.row label {
+    width: 50%;
+    font-size: 14px;
+}
+
+.row input, .row select {
+    width: 45%;
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+}
+
+/* Buttons */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.predict-btn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    color: white;
+}
+
+/* Result */
+.result-card {
+    text-align: center;
+}
+
+.salary {
+    font-size: 32px;
+    color: #22c55e;
+    margin: 10px 0;
+}
+
+.sub-text {
+    color: #94a3b8;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+    .row {
+        flex-direction: column;
+    }
+
+    .row label {
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .row input, .row select {
+        width: 100%;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>💼 AI Salary Predictor</header>
+
+<div class="main">
+
+    <!-- FORM -->
+    <div class="card">
+
+        <div class="row"><label>Age</label><input id="age"></div>
+        <div class="row"><label>Experience (Years)</label><input id="experience"></div>
+        <div class="row"><label>Projects</label><input id="projects"></div>
+        <div class="row"><label>Performance Score</label><input id="performance"></div>
+        <div class="row"><label>Certifications</label><input id="certifications"></div>
+        <div class="row"><label>Remote Work (0/1)</label><input id="remote"></div>
+        <div class="row"><label>Overtime Hours</label><input id="overtime"></div>
+        <div class="row"><label>Training Hours</label><input id="training"></div>
+
+        <div class="row">
+            <label>Education</label>
+            <select id="education">
+                <option value="Bachelor">Bachelor</option>
+                <option value="Master">Master</option>
+                <option value="PhD">PhD</option>
+            </select>
+        </div>
+
+        <div class="row">
+            <label>Department</label>
+            <select id="department">
+                <option value="IT">IT</option>
+                <option value="HR">HR</option>
+                <option value="Finance">Finance</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="predict-btn" onclick="predictSalary()">Predict</button>
+            <button class="reset-btn" onclick="resetForm()">Reset</button>
+        </div>
+
+    </div>
+
+    <!-- RESULT -->
+    <div class="card result-card">
+        <h2>📊 Prediction</h2>
+        <div class="salary" id="result">--</div>
+        <div class="sub-text" id="monthly"></div>
+    </div>
+
+</div>
+
+<script>
+async function predictSalary() {
+    const data = {
+        Age: parseInt(document.getElementById("age").value),
+        Experience_Years: parseInt(document.getElementById("experience").value),
+        Num_Projects: parseInt(document.getElementById("projects").value),
+        Performance_Score: parseInt(document.getElementById("performance").value),
+        Certifications: parseInt(document.getElementById("certifications").value),
+        Remote_Work: parseInt(document.getElementById("remote").value),
+        Overtime_Hours: parseInt(document.getElementById("overtime").value),
+        Training_Hours: parseInt(document.getElementById("training").value),
+        Education_Level: document.getElementById("education").value,
+        Department: document.getElementById("department").value
+    };
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        let lpa = result.prediction;
+
+        document.getElementById("result").innerText =
+            lpa.toFixed(2) + " LPA";
+
+        let monthly = (lpa * 100000) / 12;
+
+        document.getElementById("monthly").innerText =
+            "≈ ₹ " + monthly.toFixed(0) + " / month";
+
+    } catch (error) {
+        document.getElementById("result").innerText = "Error ⚠️";
+        document.getElementById("monthly").innerText = "";
+    }
+}
+
+/* 🔄 Reset function */
+function resetForm() {
+    document.querySelectorAll("input").forEach(i => i.value = "");
+    document.getElementById("education").selectedIndex = 0;
+    document.getElementById("department").selectedIndex = 0;
+    document.getElementById("result").innerText = "--";
+    document.getElementById("monthly").innerText = "";
+}
+</script>
+
+</body>
+</html>
